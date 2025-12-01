@@ -184,7 +184,7 @@ export const allPlansMock: Plan[] = [
 ];
 
 export function getPlans(): Plan[] {
-  return allPlansMock;
+  return [...allPlansMock].sort((a, b) => a.price - b.price);
 }
 
 export function getAllPlans(): Plan[] {
@@ -249,7 +249,7 @@ export function searchPlans(
   const filtersKey = JSON.stringify(filters);
 
   if (lastFiltersCache !== filtersKey) {
-    let filtered = allPlansMock;
+    let filtered = getPlans();
     if (filters.minPrice !== undefined) {
       filtered = filtered.filter((plan) => plan.price >= filters.minPrice!);
     }
@@ -282,15 +282,7 @@ export function searchPlans(
     lastFiltersCache = filtersKey;
   }
 
-  if (filteredPlansCache) {
-    if (page % 2 === 0) {
-      filteredPlansCache.sort((a, b) => b.price - a.price);
-    } else {
-      filteredPlansCache.sort((a, b) => a.price - b.price);
-    }
-  }
-
-  const total = filteredPlansCache ? filteredPlansCache.length : 0;
+  const total = filteredPlansCache?.length ?? 0;
   const totalPages = Math.ceil(total / pageSize);
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
