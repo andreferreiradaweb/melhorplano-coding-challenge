@@ -84,6 +84,7 @@ export default function Home() {
       });
   }, []);
 
+  // Requisição de recomendação de planos baseada nos campos selecionados
   useEffect(() => {
   async function getRecommendation() {
     if (recomFields.recomCity && recomFields.recomUsageProfile) {
@@ -107,6 +108,7 @@ export default function Home() {
     }));
   }
 
+  // foi necessário criar uma função separada para lidar com as mudanças nos campos de recomendação, garantindo que o estado seja atualizado corretamente com base na entrada do usuário.
   async function handleRecommendationPlan(
   e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 ) {
@@ -126,6 +128,7 @@ export default function Home() {
 
   return (
     <>
+      {/* Modal de recomendação de planos */}
       <ReactModal isOpen={isOpen} onClose={handleModal}>
         <button style={{ position: "absolute", top: 10, right: 10, cursor: "pointer", backgroundColor: "transparent", border: "none" }} onClick={() => setIsOpen(false)}><X /></button>
         <label style={{ color: "#00897b", fontWeight: 600, fontSize: 15 }}>
@@ -172,7 +175,7 @@ export default function Home() {
             </option>
           ))}
         </select>
-
+          { /* Exibe o plano recomendado se disponível, utilizando o mesmo componente já existente. */ }
         { recommendedPlans.id && <PlanCard key={recommendedPlans.id} plan={recommendedPlans} />}
 
       </ReactModal>

@@ -6,6 +6,7 @@ type ModalProps = {
   children: React.ReactNode;
 };
 
+// Componente de Modal simples em React, para trabalhar a sugestão de plano de forma interativa, permitindo ao usuário fechar o modal ao clicar fora dele ou em um botão de fechar. Utilizei essa abordagem inspirado em ferramentas de inteligência de catálogo.
 export default function ReactModal({ isOpen, onClose, children }: ModalProps) {
   if (!isOpen) return null;
 
