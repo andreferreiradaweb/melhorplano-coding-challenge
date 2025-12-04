@@ -22,3 +22,13 @@ export async function fetchFilteredPlans(params: PlanSearchParams) {
   const { data } = await api.get("/plans/search", { params });
   return data;
 }
+
+export interface RecommendationParams {
+  recomCity: string;
+  recomUsageProfile: string;
+} 
+
+export async function fetchRecommendations(params: RecommendationParams) {
+  const { data } = await api.get("/plans/recommendation", { params });
+  return data;
+}

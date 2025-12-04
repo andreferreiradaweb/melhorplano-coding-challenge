@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import api, { fetchFilteredPlans, PlanSearchParams } from "../services/api";
+import api, { fetchFilteredPlans, PlanSearchParams, fetchRecommendations, RecommendationParams } from "../services/api";
 import PlanCard from "../components/PlanCard";
 import Menu from "../components/Menu";
 import Footer from "../components/Footer";
 import styles from "../styles/Home.module.scss";
+import ReactModal from "../components/Modal";
+import { X } from 'lucide-react'
 
 interface Plan {
   id: number;
@@ -37,6 +39,17 @@ const CITIES = [
   "Brasília",
 ];
 
+const USAGE_PROFILE = [
+  { label: "Redes sociais / Navegação / WhatsApp", value: "1" },
+  { label: "Aulas online / Reuniões (Zoom, Meet)", value: "2" },
+  { label: "Streaming HD (Netflix, YouTube)", value: "3" },
+  { label: "Streaming 4K / TV ao vivo", value: "4" },
+  { label: "Jogos online", value: "5" },
+  { label: "Download pesado / Upload de vídeos", value: "6" },
+  { label: "Trabalho remoto", value: "7" },
+  { label: "Casa com muitos dispositivos conectados", value: "8" },
+];
+
 export default function Home() {
   const [filters, setFilters] = useState<PlanSearchParams>({
     page: 1,
@@ -45,6 +58,14 @@ export default function Home() {
   const [result, setResult] = useState<PaginatedPlans | null>(null);
   const [loading, setLoading] = useState(false);
   const [planNames, setPlanNames] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(true);
+  const [recomFields, setRecomFields] = useState<RecommendationParams>({ recomCity: "", recomUsageProfile: "" });
+  const [recommendedPlans, setRecommendedPlans] = useState<Plan>({  } as Plan);
+
+
+  const handleModal = () => {
+    setIsOpen((prev) => !prev);
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -63,6 +84,18 @@ export default function Home() {
       });
   }, []);
 
+  useEffect(() => {
+  async function getRecommendation() {
+    if (recomFields.recomCity && recomFields.recomUsageProfile) {
+      const plan = await fetchRecommendations(recomFields);
+      setRecommendedPlans(plan);
+    }
+  }
+
+  getRecommendation();
+}, [recomFields]);
+
+
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
@@ -74,12 +107,75 @@ export default function Home() {
     }));
   }
 
+  async function handleRecommendationPlan(
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) {
+  const { name, value } = e.target;
+
+  setRecomFields((prev) => ({
+    ...prev,
+    [name]: value || "",
+  }));
+}
+
+
   function handlePageChange(newPage: number) {
     setFilters((prev) => ({ ...prev, page: newPage }));
   }
 
+
   return (
     <>
+      <ReactModal isOpen={isOpen} onClose={handleModal}>
+        <button style={{ position: "absolute", top: 10, right: 10, cursor: "pointer", backgroundColor: "transparent", border: "none" }} onClick={() => setIsOpen(false)}><X /></button>
+        <label style={{ color: "#00897b", fontWeight: 600, fontSize: 15 }}>
+          Cidade
+        </label>
+        <select
+          name="recomCity"
+          onChange={handleRecommendationPlan}
+          defaultValue=""
+          style={{
+            padding: 10,
+            borderRadius: 8,
+            border: "1.5px solid #b2dfdb",
+            background: "#fff",
+            fontSize: 15,
+          }}
+        >
+          <option value="">Selecione</option>
+          {CITIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <label style={{ color: "#00897b", fontWeight: 600, fontSize: 15 }}>
+          Selecione a opção que mais tem a ver com você
+        </label>
+        <select
+          name="recomUsageProfile"
+          onChange={handleRecommendationPlan}
+          defaultValue=""
+          style={{
+            padding: 10,
+            borderRadius: 8,
+            border: "1.5px solid #b2dfdb",
+            background: "#fff",
+            fontSize: 15,
+          }}
+        >
+          <option value="">Selecione</option>
+          {USAGE_PROFILE.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+
+        { recommendedPlans.id && <PlanCard key={recommendedPlans.id} plan={recommendedPlans} />}
+
+      </ReactModal>
       <Menu />
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* Sidebar de Filtros */}

@@ -1,5 +1,3 @@
-import styles from "../styles/Home.module.scss";
-
 interface Plan {
   id: number;
   name: string;
