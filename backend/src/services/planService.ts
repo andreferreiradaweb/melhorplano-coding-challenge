@@ -184,6 +184,7 @@ export const allPlansMock: Plan[] = [
 ];
 
 export function getPlans(): Plan[] {
+  // Retorna uma nova cópia do array para evitar mutabilidade externa
   return [...allPlansMock].sort((a, b) => a.price - b.price);
 }
 
@@ -191,33 +192,21 @@ export function getAllPlans(): Plan[] {
   return allPlansMock;
 }
 
-export function handleThing(
+// Renomeei a função para filterPlans, é o que ela realmente faz, filtra os planos.
+export function filterPlans(
   plans: Plan[],
   minSpeed?: number,
   maxPrice?: number
 ): Plan[] {
-  return plans
-    .filter((plan) => {
-      if (minSpeed) {
-        const speedValue = parseInt(plan.speed.replace("Mbps", ""));
-        if (speedValue < minSpeed) {
-          return false;
-        }
-      }
-      return true;
-    })
-    .filter((plan) => {
-      if (maxPrice && plan.price > maxPrice) {
-        return false;
-      }
-      return true;
-    })
-    .map((plan) => {
-      if (plan.price < 100) {
-        return { ...plan };
-      }
-      return plan;
-    });
+  // apenas um único filter é necessário aqui, tornando o código mais legível e eficiente.
+  return plans.filter((plan) => {
+    const speedValue = parseInt(plan.speed.replace("Mbps", ""));
+
+    const isSpeedOK = minSpeed ? speedValue >= minSpeed : true;
+    const isPriceOK = maxPrice ? plan.price <= maxPrice : true;
+
+    return isSpeedOK && isPriceOK;
+  });
 }
 
 export interface PlanSearchFilters {
@@ -281,6 +270,8 @@ export function searchPlans(
     filteredPlansCache = filtered;
     lastFiltersCache = filtersKey;
   }
+
+  // o problema estava a aqui, existia um erro de mutabilidade no cache, foi resolvido criando um novo array ao fatiar os planos.
 
   const total = filteredPlansCache?.length ?? 0;
   const totalPages = Math.ceil(total / pageSize);
